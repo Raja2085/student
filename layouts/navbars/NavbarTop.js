@@ -1,4 +1,3 @@
-// import node module libraries
 import { Menu } from 'react-feather';
 import Link from 'next/link';
 import {

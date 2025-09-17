@@ -1,7 +1,6 @@
 'use client';
 
 import { useState } from 'react';
-
 export default function StudentList() {
   const [students, setStudents] = useState([
     { id: 1, regNo: "2025000001", name: "John Doe", dob: "2005-03-15", email: "john@example.com", phone: "9876543210", place: "Chennai", classType: "Individual" },

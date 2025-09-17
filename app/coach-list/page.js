@@ -1,42 +1,13 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
+import supabase from 'app/config/supabase'; // Your supabase client setup
 
 export default function CoachList() {
-  const [coaches, setCoaches] = useState([
-    {
-      id: 1,
-      coachId: "COACH001",
-      name: "David Miller",
-      specialty: "Fitness",
-      email: "david@example.com",
-      phone: "9786453210",
-      location: "Chennai",
-    },
-    {
-      id: 2,
-      coachId: "COACH002",
-      name: "Priya Sharma",
-      specialty: "Nutrition",
-      email: "priya@example.com",
-      phone: "9123432198",
-      location: "Bangalore",
-    },
-    {
-      id: 3,
-      coachId: "COACH003",
-      name: "Ravi Kumar",
-      specialty: "Swimming",
-      email: "ravi@example.com",
-      phone: "9887766554",
-      location: "Mumbai",
-    },
-  ]);
-
+  const [coaches, setCoaches] = useState([]);
   const [showForm, setShowForm] = useState(false);
   const [editingCoach, setEditingCoach] = useState(null);
   const [formData, setFormData] = useState({
-    coachId: '',
     name: '',
     specialty: '',
     email: '',
@@ -44,15 +15,33 @@ export default function CoachList() {
     location: '',
   });
 
+  useEffect(() => {
+    async function fetchCoaches() {
+      const { data, error } = await supabase.from('coaches').select('*').order('id');
+      if (error) {
+        alert('Fetch error: ' + error.message);
+        return;
+      }
+      setCoaches(data || []);
+    }
+    fetchCoaches();
+  }, []);
+
   const handleAddClick = () => {
     setEditingCoach(null);
-    setFormData({ coachId: '', name: '', specialty: '', email: '', phone: '', location: '' });
+    setFormData({ name: '', specialty: '', email: '', phone: '', location: '' });
     setShowForm(true);
   };
 
   const handleEditClick = (coach) => {
     setEditingCoach(coach.id);
-    setFormData({ ...coach });
+    setFormData({
+      name: coach.name,
+      specialty: coach.specialty,
+      email: coach.email,
+      phone: coach.phone,
+      location: coach.location,
+    });
     setShowForm(true);
   };
 
@@ -61,20 +50,53 @@ export default function CoachList() {
     setFormData(prev => ({ ...prev, [name]: value }));
   };
 
-  const handleFormSubmit = (e) => {
+  const handleFormSubmit = async (e) => {
     e.preventDefault();
+
+    const coachBody = { ...formData };
+
     if (editingCoach !== null) {
-      setCoaches(prev => prev.map(c => c.id === editingCoach ? { ...formData, id: editingCoach } : c));
+      const { error } = await supabase
+        .from('coaches')
+        .update(coachBody)
+        .eq('id', editingCoach);
+      if (error) {
+        alert('Update error: ' + error.message);
+        return;
+      }
+      setCoaches(prev =>
+        prev.map(c => c.id === editingCoach ? { ...c, ...coachBody } : c)
+      );
     } else {
-      const newId = coaches.length > 0 ? Math.max(...coaches.map(c => c.id)) + 1 : 1;
-      setCoaches(prev => [...prev, { ...formData, id: newId }]);
+      const { data, error } = await supabase
+        .from('coaches')
+        .insert([coachBody])
+        .select();
+      if (error) {
+        alert('Insert error: ' + error.message);
+        return;
+      }
+      if (data) setCoaches(prev => [...prev, data[0]]);
     }
     setShowForm(false);
   };
 
-  const handleDeleteClick = (id) => {
+  const handleDeleteClick = async (id) => {
+    const { error } = await supabase
+      .from('coaches')
+      .delete()
+      .eq('id', id);
+    if (error) {
+      alert('Delete error: ' + error.message);
+      return;
+    }
     setCoaches(prev => prev.filter(c => c.id !== id));
   };
+
+  // Helper to format ID as 0001, 0002, etc.
+  function formatId(id) {
+    return id.toString().padStart(4, '0');
+  }
 
   return (
     <div className="container max-w-6xl bg-white p-5 rounded shadow my-4">
@@ -88,9 +110,6 @@ export default function CoachList() {
       {showForm && (
         <form onSubmit={handleFormSubmit} className="bg-light p-4 rounded shadow-sm mb-5">
           <div className="row g-3">
-            <div className="col-md-6">
-              <input required type="text" name="coachId" placeholder="Coach ID" className="form-control" value={formData.coachId} onChange={handleInputChange} />
-            </div>
             <div className="col-md-6">
               <input required type="text" name="name" placeholder="Name" className="form-control" value={formData.name} onChange={handleInputChange} />
             </div>
@@ -135,7 +154,7 @@ export default function CoachList() {
           {coaches.map((coach, idx) => (
             <tr key={coach.id}>
               <td>{idx + 1}</td>
-              <td>{coach.coachId}</td>
+              <td>{formatId(coach.id)}</td>
               <td>{coach.name}</td>
               <td>{coach.specialty}</td>
               <td>{coach.email}</td>

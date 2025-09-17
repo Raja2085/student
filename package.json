@@ -29,6 +29,7 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@supabase/supabase-js": "^2.57.4",
     "@vercel/analytics": "^1.0.1",
     "apexcharts": "^4.0.0",
     "bootstrap": "^5.3.8",
@@ -57,6 +58,7 @@
     "postcss": "^8.5.6",
     "react": "^19.1.1",
     "react-dom": "^19.1.1",
+    "supabase": "^2.40.7",
     "tailwindcss": "^4.1.13"
   }
 }

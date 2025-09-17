@@ -7,8 +7,6 @@ import {
 	Form
 } from 'react-bootstrap';
 
-// import sub components
-import QuickMenu from 'layouts/QuickMenu';
 
 const NavbarTop = (props) => {
 	return (
@@ -25,9 +23,7 @@ const NavbarTop = (props) => {
 				
 				</div>
 				{/* Quick Menu */}
-				<Nav className="navbar-right-wrap ms-2 d-flex nav-top-wrap">
-					<QuickMenu />
-				</Nav>
+	
 			</div>
 		</Navbar>
 	);
